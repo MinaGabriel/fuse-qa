@@ -87,7 +87,6 @@ def clean_pred(s: str) -> str:
 
 def safe_div(a, b):
     return (a / b) if b else 0.0
-
 def ask_llm_generate(model, tokenizer, question: str, context: str, use_context: bool, llama_device: str) -> str:
     if use_context:
         system = (
@@ -111,20 +110,46 @@ def ask_llm_generate(model, tokenizer, question: str, context: str, use_context:
             "No explanations. No full sentences."
         )
         user = f"Question: {question}\nAnswer:"
+    # Ensure pad token exists (Gemma often has none)
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
+    # Build prompt robustly across chat templates (Gemma rejects system role)
+    prompt = None
     if getattr(tokenizer, "chat_template", None):
-        prompt = tokenizer.apply_chat_template(
-            [{"role":"system","content":system},{"role":"user","content":user}],
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-    else:
-        prompt = system + "\n\n" + user
+        messages_with_system = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ]
+        messages_user_only = [
+            {"role": "user", "content": f"{system}\n\n{user}"},
+        ]
 
-    
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=4096)
-    inputs = {k: v.to(llama_device) for k, v in inputs.items()}  # Explicit device
-    
+        try:
+            prompt = tokenizer.apply_chat_template(
+                messages_with_system,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+        except Exception as e:
+            # Common: jinja2.exceptions.TemplateError("System role not supported")
+            # Fallback: merge system into user
+            prompt = tokenizer.apply_chat_template(
+                messages_user_only,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+    else:
+        prompt = f"{system}\n\n{user}"
+
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt",
+        truncation=True,
+        max_length=4096,
+    )
+    inputs = {k: v.to(llama_device) for k, v in inputs.items()}
+
     with torch.no_grad():
         out = model.generate(
             **inputs,
@@ -134,5 +159,6 @@ def ask_llm_generate(model, tokenizer, question: str, context: str, use_context:
             pad_token_id=tokenizer.pad_token_id,
             use_cache=True,
         )
+
     gen = tokenizer.decode(out[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True)
     return clean_pred(gen)
