@@ -1,4 +1,4 @@
-from .utils import hf_model_to_filename, ask_llm_generate, parse_list, build_context, tier_from_spop, clean_pred, safe_div, norm
+from .utils import hf_model_to_filename, ask_llm_generate, parse_list, build_context, tier_from_spop, clean_pred, safe_div, norm, generate_report, write_record
 
 __all__ = [
     "hf_model_to_filename",
@@ -9,4 +9,6 @@ __all__ = [
     "clean_pred",
     "safe_div",
     "norm",
+    "generate_report",
+    "write_record",
 ]
