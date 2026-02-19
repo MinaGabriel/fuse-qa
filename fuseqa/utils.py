@@ -172,7 +172,6 @@ def safe_div(a, b):
 # ─────────────────────────────────────────────────────────────────────────────
 # LLM inference
 # ─────────────────────────────────────────────────────────────────────────────
-
 def ask_llm_generate(
     model,
     tokenizer,
@@ -182,7 +181,6 @@ def ask_llm_generate(
     device,
 ) -> str:
 
-    # Strong anti-reasoning prefix (model-agnostic)
     base_guard = (
         "You MUST output ONLY the final answer.\n"
         "DO NOT output reasoning.\n"
@@ -218,26 +216,24 @@ def ask_llm_generate(
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # Build prompt (robust across ALL models)
+    # Build prompt — always merge system into user to avoid chat-template
+    # role mismatches (e.g. gpt-oss, Gemma models that reject system role)
+    merged_user = f"{system}\n\n{user}"
+
     if getattr(tokenizer, "chat_template", None):
         try:
             prompt = tokenizer.apply_chat_template(
-                [
-                    {"role": "system", "content": system},
-                    {"role": "user",   "content": user},
-                ],
+                [{"role": "user", "content": merged_user}],
                 tokenize=False,
                 add_generation_prompt=True,
             )
         except Exception:
-            # Gemma fallback: merge system into user
-            prompt = tokenizer.apply_chat_template(
-                [{"role": "user", "content": f"{system}\n\n{user}"}],
-                tokenize=False,
-                add_generation_prompt=True,
-            )
+            prompt = merged_user
     else:
-        prompt = f"{system}\n\n{user}"
+        prompt = merged_user
+
+    # Debug: uncomment to diagnose prompt bleed issues
+    # print("===PROMPT===\n", prompt, "\n===END===")
 
     inputs = tokenizer(
         prompt,
@@ -247,21 +243,14 @@ def ask_llm_generate(
     )
     inputs = {k: v.to(device) for k, v in inputs.items()}
 
-    # Hard-block reasoning tokens (critical for gpt-oss)
-    bad_words_ids = tokenizer(
-        ["analysis", "Analysis", "analysis:", "final:", "Final:"],
-        add_special_tokens=False,
-    ).input_ids
-
     with torch.no_grad():
         out = model.generate(
             **inputs,
-            max_new_tokens=6,                  # reduces reasoning chance
+            max_new_tokens=20,       # increased: 6 was too tight, caused degenerate outputs
             do_sample=False,
-            temperature=0.0,
             eos_token_id=tokenizer.eos_token_id,
             pad_token_id=tokenizer.pad_token_id,
-            bad_words_ids=bad_words_ids,       # key fix for gpt-oss
+            # removed bad_words_ids: was forcing degenerate decoding paths
             use_cache=True,
         )
 
@@ -270,9 +259,18 @@ def ask_llm_generate(
         skip_special_tokens=True,
     )
 
-    # Final safety cleanup (cross-model)
+    # Post-processing: strip reasoning artifacts instead of blocking at generation time
     gen = gen.strip()
-    if gen.lower().startswith("analysis"):
-        gen = gen.split("\n")[-1].strip()
+
+    # If model outputs multi-line reasoning, grab the last non-empty line
+    lines = [ln.strip() for ln in gen.splitlines() if ln.strip()]
+    if lines:
+        # Prefer a line that doesn't look like a reasoning preamble
+        for ln in reversed(lines):
+            if not re.search(r"\b(analysis|reasoning|therefore|because|so the answer)\b", ln, re.IGNORECASE):
+                gen = ln
+                break
+        else:
+            gen = lines[-1]
 
     return clean_pred(gen)
