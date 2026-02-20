@@ -26,25 +26,6 @@ class GenerationConfig:
     repetition_penalty: float = 1.1
 
 
-@dataclass(frozen=True)
-class PromptConfig:
-    system_no_context: str = (
-    "You are a precise factual question answering system.\n"
-    "Return only the exact answer span."
-    )
-
-    system_with_context: str = (
-        "You are a strict answer extraction system.\n"
-        "Extract the exact answer span from the context."
-    )
-
-    rules: Tuple[str, ...] = (
-    "Answer with the shortest possible span (1-3 words).",
-    "Do not explain.",
-    "Do not repeat the question.",
-)   
-
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Filename utilities
@@ -206,8 +187,8 @@ def safe_div(a: float, b: float) -> float:
 
 class LLMAnswerer:
     
-    def __init__(self, model, tokenizer, device: Union[str, torch.device] = "cuda:0", 
-                 prompt_cfg: PromptConfig = PromptConfig(), gen_cfg: GenerationConfig = GenerationConfig()):
+    def __init__(self, model, tokenizer, prompt_cfg,device: Union[str, torch.device] = "cuda:0", 
+                  gen_cfg: GenerationConfig = GenerationConfig()):
         self.model = model
         self.tokenizer = tokenizer
         self.device = device
@@ -301,8 +282,8 @@ class LLMAnswerer:
 # Backward-compatible function (drop-in replacement)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def ask_llm_generate(model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device]) -> str:
-    return LLMAnswerer(model=model, tokenizer=tokenizer, device=device).answer(question=question, context=context, use_context=use_context)
+def ask_llm_generate(prompt_cfg, model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device]) -> str:
+    return LLMAnswerer(prompt_cfg, model=model, tokenizer=tokenizer, device=device).answer(question=question, context=context, use_context=use_context) # type: ignore
 
 
 # ─────────────────────────────────────────────────────────────────────────────
