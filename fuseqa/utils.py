@@ -187,7 +187,7 @@ def safe_div(a: float, b: float) -> float:
 
 class LLMAnswerer:
     
-    def __init__(self, model, tokenizer, prompt_cfg,device: Union[str, torch.device] = "cuda:0", 
+    def __init__(self,prompt_cfg, model, tokenizer, device: Union[str, torch.device] = "cuda:0", 
                   gen_cfg: GenerationConfig = GenerationConfig()):
         self.model = model
         self.tokenizer = tokenizer
