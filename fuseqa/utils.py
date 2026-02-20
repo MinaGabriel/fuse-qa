@@ -198,6 +198,7 @@ class LLMAnswerer:
 
     def answer(self, question: str, context: str = "", use_context: bool = True) -> str:
         prompt_or_messages = self._build_prompt(question=question, context=context, use_context=use_context)
+        print(f"Prompt:\n{prompt_or_messages}\n{'-'*40}")
         inputs = self._tokenize(prompt_or_messages)
         gen_text = self._generate_and_strip(inputs)
         return clean_pred(self._pick_best_line(gen_text))
