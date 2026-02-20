@@ -19,7 +19,7 @@ import torch
 @dataclass(frozen=True)
 class GenerationConfig:
     max_input_tokens: int = 4096
-    max_new_tokens: int = 16
+    max_new_tokens: int = 6
     do_sample: bool = False
     temperature: float = 0.0
     top_p: float = 1.0
