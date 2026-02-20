@@ -196,9 +196,10 @@ class LLMAnswerer:
         self.gen_cfg = gen_cfg
         self._ensure_pad_token()
 
-    def answer(self, question: str, context: str = "", use_context: bool = True) -> str:
+    def answer(self, question: str, context: str = "", use_context: bool = True, print_prompt: bool = False) -> str:
         prompt_or_messages = self._build_prompt(question=question, context=context, use_context=use_context)
-        print(f"Prompt:\n{prompt_or_messages}\n{'-'*40}")
+        if print_prompt:
+            print(f"Prompt:\n{prompt_or_messages}\n{'-'*40}")
         inputs = self._tokenize(prompt_or_messages)
         gen_text = self._generate_and_strip(inputs)
         return clean_pred(self._pick_best_line(gen_text))
@@ -214,15 +215,21 @@ class LLMAnswerer:
                 self.tokenizer.pad_token = eos
 
     def _build_prompt(self, question: str, context: str, use_context: bool):
-        system = self.prompt_cfg.system_with_context if use_context else self.prompt_cfg.system_no_context
-        rules = "Rules:\n- " + "\n- ".join(self.prompt_cfg.rules)
-
         if use_context:
-            user = f"{rules}\n\nContext:\n{context}\n\nQuestion: {question}\nAnswer:"
+            return (
+                "Answer the question using the context.\n"
+                "Return a short answer (1-3 words). Do not explain.\n\n"
+                f"Context:\n{context}\n\n"
+                f"Question: {question}\n"
+                "Answer:"
+            )
         else:
-            user = f"{rules}\n\nQuestion: {question}\nAnswer:"
+            return (
+                "Answer the question with a short answer (1-3 words). Do not explain.\n\n"
+                f"Question: {question}\n"
+                "Answer:"
+            )
 
-        return f"{system}\n\n{user}"
 
 
     def _tokenize(self, prompt_or_messages):
@@ -283,8 +290,8 @@ class LLMAnswerer:
 # Backward-compatible function (drop-in replacement)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def ask_llm_generate(prompt_cfg, model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device]) -> str:
-    return LLMAnswerer(prompt_cfg, model=model, tokenizer=tokenizer, device=device).answer(question=question, context=context, use_context=use_context) # type: ignore
+def ask_llm_generate(prompt_cfg, model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device], print_prompt: bool = False) -> str:
+    return LLMAnswerer(prompt_cfg, model=model, tokenizer=tokenizer, device=device).answer(question=question, context=context, use_context=use_context, print_prompt=print_prompt) # type: ignore
 
 
 # ─────────────────────────────────────────────────────────────────────────────
