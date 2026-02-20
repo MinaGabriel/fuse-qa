@@ -187,12 +187,11 @@ def safe_div(a: float, b: float) -> float:
 
 class LLMAnswerer:
     
-    def __init__(self,prompt_cfg, model, tokenizer, device: Union[str, torch.device] = "cuda:0", 
+    def __init__(self, model, tokenizer, device: Union[str, torch.device] = "cuda:0", 
                   gen_cfg: GenerationConfig = GenerationConfig()):
         self.model = model
         self.tokenizer = tokenizer
-        self.device = device
-        self.prompt_cfg = prompt_cfg
+        self.device = device 
         self.gen_cfg = gen_cfg
         self._ensure_pad_token()
 
@@ -290,8 +289,9 @@ class LLMAnswerer:
 # Backward-compatible function (drop-in replacement)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def ask_llm_generate(prompt_cfg, model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device], print_prompt: bool = False) -> str:
-    return LLMAnswerer(prompt_cfg, model=model, tokenizer=tokenizer, device=device).answer(question=question, context=context, use_context=use_context, print_prompt=print_prompt) # type: ignore
+def ask_llm_generate(model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device], print_prompt: bool = False) -> str:
+    return LLMAnswerer(model=model, tokenizer=tokenizer, device=device)\
+            .answer(question=question, context=context, use_context=use_context, print_prompt=print_prompt) # type: ignore
 
 
 # ─────────────────────────────────────────────────────────────────────────────
