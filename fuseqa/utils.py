@@ -39,15 +39,10 @@ class PromptConfig:
     )
 
     rules: Tuple[str, ...] = (
-        "Return ONLY the final answer",
-        "Answer must be 1–3 words",
-        "Do NOT explain",
-        "Do NOT repeat the question",
-        "Do NOT include any extra text",
-        "Do NOT include punctuation unless part of the answer",
-        "Prefer the shortest correct answer span",
-        "If the answer is not clearly present, return UNKNOWN",
-    )
+    "Answer with the shortest possible span (1-3 words).",
+    "Do not explain.",
+    "Do not repeat the question.",
+)   
 
 
 
