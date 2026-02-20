@@ -187,16 +187,19 @@ def safe_div(a: float, b: float) -> float:
 
 class LLMAnswerer:
     
-    def __init__(self, model, tokenizer, device: Union[str, torch.device] = "cuda:0", 
-                  gen_cfg: GenerationConfig = GenerationConfig()):
+    def __init__(self, model, tokenizer, 
+                 device: Union[str, torch.device] = "cuda:0", 
+                  gen_cfg: GenerationConfig = GenerationConfig(),
+                  prompt_fn=None):
         self.model = model
         self.tokenizer = tokenizer
         self.device = device 
         self.gen_cfg = gen_cfg
+        self.prompt_fn = prompt_fn
         self._ensure_pad_token()
 
     def answer(self, question: str, context: str = "", use_context: bool = True, print_prompt: bool = False) -> str:
-        prompt_or_messages = self._build_prompt(question=question, context=context, use_context=use_context)
+        prompt_or_messages = self.prompt_fn(question=question, context=context, use_context=use_context)
         if print_prompt:
             print(f"Prompt:\n{prompt_or_messages}\n{'-'*40}")
         inputs = self._tokenize(prompt_or_messages)
@@ -212,23 +215,7 @@ class LLMAnswerer:
             eos = getattr(self.tokenizer, "eos_token", None)
             if eos is not None:
                 self.tokenizer.pad_token = eos
-
-    def _build_prompt(self, question: str, context: str, use_context: bool):
-        if use_context:
-            return (
-                "Answer the question using the context.\n"
-                "Return a short answer (1-3 words). Do not explain.\n\n"
-                f"Context:\n{context}\n\n"
-                f"Question: {question}\n"
-                "Answer:"
-            )
-        else:
-            return (
-                "Answer the question with a short answer (1-3 words). Do not explain.\n\n"
-                f"Question: {question}\n"
-                "Answer:"
-            )
-
+ 
 
 
     def _tokenize(self, prompt_or_messages):
@@ -289,8 +276,8 @@ class LLMAnswerer:
 # Backward-compatible function (drop-in replacement)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def ask_llm_generate(model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device], print_prompt: bool = False) -> str:
-    return LLMAnswerer(model=model, tokenizer=tokenizer, device=device)\
+def ask_llm_generate(model, tokenizer, question: str, context: str, use_context: bool, device: Union[str, torch.device], print_prompt: bool = False, prompt_fn=None) -> str:
+    return LLMAnswerer(model=model, tokenizer=tokenizer, device=device, prompt_fn=prompt_fn)\
             .answer(question=question, context=context, use_context=use_context, print_prompt=print_prompt) # type: ignore
 
 
