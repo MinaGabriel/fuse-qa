@@ -1,3 +1,5 @@
+from .sre import SRE
+
 from .utils import (
     hf_model_to_filename,
     ask_llm_generate,
@@ -12,6 +14,7 @@ from .utils import (
 )
 
 __all__ = (
+    "SRE",
     "hf_model_to_filename",
     "ask_llm_generate",
     "parse_list",
