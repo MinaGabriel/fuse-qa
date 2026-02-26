@@ -118,3 +118,58 @@ class SRE:
             ])
 
         print(table)
+        
+    @torch.no_grad()
+    def score_sentences_batch(
+        self,
+        question,
+        full_context,
+        sentences,
+        max_length=1024,
+        batch_size=16
+    ):
+        all_results = []
+
+        for i in range(0, len(sentences), batch_size):
+            batch = sentences[i:i + batch_size]
+
+            texts = [
+                self.build_text(question, full_context, s)
+                for s in batch
+            ]
+
+            enc = self.tokenizer(
+                texts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=max_length
+            ).to(self.device)
+
+            # Always use LoRA model for SRE scoring
+            logits = self.lora_model(**enc).logits
+            probs = F.softmax(logits, dim=-1)
+
+            for j, s in enumerate(batch):
+                all_results.append({
+                    "sentence": s,
+                    "score": probs[j, 1].item(),   # YES
+                    "no_score": probs[j, 0].item()
+                })
+
+        return sorted(all_results, key=lambda x: x["score"], reverse=True)
+    
+    def print_ranking_table(self, results, top_k=10):
+        from prettytable import PrettyTable
+
+        table = PrettyTable()
+        table.field_names = ["Rank", "Score", "Sentence"]
+
+        for i, r in enumerate(results[:top_k], 1):
+            table.add_row([
+                i,
+                f"{r['score']:.4f}",
+                r["sentence"]
+            ])
+
+        print(table)
