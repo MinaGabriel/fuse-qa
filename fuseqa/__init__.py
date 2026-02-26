@@ -11,6 +11,8 @@ from .utils import (
     norm,
     generate_report,
     write_record,
+    update_metrics,
+    current_scores
     
 )
 
@@ -26,4 +28,6 @@ __all__ = (
     "norm",
     "generate_report",
     "write_record",
+    "update_metrics",
+    "current_scores"
 )

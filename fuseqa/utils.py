@@ -11,7 +11,31 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
 
+ 
+counts  = {g: 0 for g in ("ALL", "LONG-TAIL", "INFREQUENT", "FREQUENT")}
+em_hits = {g: 0 for g in ("ALL", "LONG-TAIL", "INFREQUENT", "FREQUENT")}
 
+import time
+start_time = time.time()
+
+
+def update_metrics(tier, em):
+    counts["ALL"] += 1
+    em_hits["ALL"] += em
+
+    if tier in counts:
+        counts[tier] += 1
+        em_hits[tier] += em
+
+
+def current_scores():
+    return {
+        "ALL_EM":     safe_div(em_hits["ALL"],        counts["ALL"]),
+        "Long_Tail":  safe_div(em_hits["LONG-TAIL"],  counts["LONG-TAIL"]),
+        "Infrequent": safe_div(em_hits["INFREQUENT"], counts["INFREQUENT"]),
+        "Frequent":   safe_div(em_hits["FREQUENT"],   counts["FREQUENT"]),
+    }
+    
 # ─────────────────────────────────────────────────────────────────────────────
 # Configuration
 # ─────────────────────────────────────────────────────────────────────────────

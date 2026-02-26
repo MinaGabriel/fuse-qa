@@ -4,11 +4,10 @@
 
 # Large local data / experiments
 popqa_with_retrieval/
-
 # Local test notebooks
 test.ipynb
-
-
+/notebooks/POPQA/results
+notebooks/ENTITYQUESTIONS/generate-data.ipynb
 ################################
 # Python
 ################################
@@ -79,3 +78,4 @@ datasets/
 
 .DS_Store
 Thumbs.db
+
