@@ -245,13 +245,15 @@ class LLMAnswerer:
     def _generate_and_strip(self, inputs: Dict[str, torch.Tensor]) -> str:
         with torch.inference_mode():
             out = self.model.generate(
-                **inputs,
-                max_new_tokens=self.gen_cfg.max_new_tokens,
-                do_sample=self.gen_cfg.do_sample, 
-                repetition_penalty=self.gen_cfg.repetition_penalty,
-                pad_token_id=getattr(self.tokenizer, "pad_token_id", None),
-                eos_token_id=getattr(self.tokenizer, "eos_token_id", None),
-            )
+            **inputs,
+            max_new_tokens=self.gen_cfg.max_new_tokens,
+            do_sample=False,
+            temperature=1.0,   # neutral
+            top_p=1.0,         # neutral
+            repetition_penalty=self.gen_cfg.repetition_penalty,
+            pad_token_id=self.tokenizer.pad_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
+        )
 
         # Robust “strip prompt” logic that works for both chat-templated and plain prompts:
         # Use input length in tokens, not string-prefix matching (more reliable across templates).
