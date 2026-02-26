@@ -11,8 +11,6 @@ from .utils import (
     norm,
     generate_report,
     write_record,
-    update_metrics,
-    current_scores
     
 )
 
@@ -27,7 +25,5 @@ __all__ = (
     "safe_div",
     "norm",
     "generate_report",
-    "write_record",
-    "update_metrics",
-    "current_scores"
+    "write_record"
 )
