@@ -12,30 +12,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 import torch
 
  
-counts  = {g: 0 for g in ("ALL", "LONG-TAIL", "INFREQUENT", "FREQUENT")}
-em_hits = {g: 0 for g in ("ALL", "LONG-TAIL", "INFREQUENT", "FREQUENT")}
 
-import time
-start_time = time.time()
-
-
-def update_metrics(tier, em):
-    counts["ALL"] += 1
-    em_hits["ALL"] += em
-
-    if tier in counts:
-        counts[tier] += 1
-        em_hits[tier] += em
-
-
-def current_scores():
-    return {
-        "ALL_EM":     safe_div(em_hits["ALL"],        counts["ALL"]),
-        "Long_Tail":  safe_div(em_hits["LONG-TAIL"],  counts["LONG-TAIL"]),
-        "Infrequent": safe_div(em_hits["INFREQUENT"], counts["INFREQUENT"]),
-        "Frequent":   safe_div(em_hits["FREQUENT"],   counts["FREQUENT"]),
-    }
-    
 # ─────────────────────────────────────────────────────────────────────────────
 # Configuration
 # ─────────────────────────────────────────────────────────────────────────────
@@ -45,8 +22,6 @@ class GenerationConfig:
     max_input_tokens: int = 4096
     max_new_tokens: int = 6
     do_sample: bool = False
-    temperature: float = 0.0
-    top_p: float = 1.0
     repetition_penalty: float = 1.1
 
 
@@ -117,6 +92,7 @@ _PUNCT = re.compile(r"[^\w\s]")
 
 def norm(s: Any) -> str:
     s = "" if s is None else str(s).lower()
+    s = re.sub(r"\b(a|an|the)\b", " ", s)  
     s = _PUNCT.sub(" ", s)
     s = _WS.sub(" ", s).strip()
     return s
@@ -179,27 +155,29 @@ def clean_pred(s: Optional[str]) -> str:
     if not s:
         return "UNKNOWN"
 
+    s = re.sub(r"\*+", "", s)
+
     lines = [ln.strip() for ln in s.splitlines() if ln.strip()]
     if not lines:
         return "UNKNOWN"
 
     s = lines[0]
+
+    s = re.sub(r"^[^\w]+", "", s)
+
     s = re.sub(r"^(answer\s*:)\s*", "", s, flags=re.IGNORECASE).strip()
     s = s.replace("#", " ").replace("_", " ")
     s = re.sub(r"\s+", " ", s).strip()
     s = re.split(r"[\.!\?:;()\[\]{}]", s, maxsplit=1)[0].strip()
     s = s.strip("\"'`[](){} ").strip()
 
-    # If the model returns multiple items, prefer the last (often most specific) token span.
     if "," in s or " and " in s.lower():
         tmp = s.replace(" and ", ", ")
         parts = [p.strip() for p in tmp.split(",") if p.strip()]
         if parts:
             s = parts[-1]
 
-    s = s.strip()
     return s if s else "UNKNOWN"
-
 
 def safe_div(a: float, b: float) -> float:
     return (a / b) if b else 0.0
@@ -265,13 +243,11 @@ class LLMAnswerer:
 
 
     def _generate_and_strip(self, inputs: Dict[str, torch.Tensor]) -> str:
-        with torch.no_grad():
+        with torch.inference_mode():
             out = self.model.generate(
                 **inputs,
                 max_new_tokens=self.gen_cfg.max_new_tokens,
-                do_sample=self.gen_cfg.do_sample,
-                temperature=self.gen_cfg.temperature,
-                top_p=self.gen_cfg.top_p,
+                do_sample=self.gen_cfg.do_sample, 
                 repetition_penalty=self.gen_cfg.repetition_penalty,
                 pad_token_id=getattr(self.tokenizer, "pad_token_id", None),
                 eos_token_id=getattr(self.tokenizer, "eos_token_id", None),
