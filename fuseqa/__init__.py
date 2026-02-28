@@ -11,6 +11,8 @@ from .utils import (
     norm,
     generate_report,
     write_record,
+    build_context_from_sre_list,
+    get_context_for_run
     
 )
 
@@ -25,5 +27,8 @@ __all__ = (
     "safe_div",
     "norm",
     "generate_report",
-    "write_record"
+    "write_record",
+    "build_context_from_sre_list",
+    "get_context_for_run",
+    
 )

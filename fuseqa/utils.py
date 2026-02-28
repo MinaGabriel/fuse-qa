@@ -128,7 +128,7 @@ def parse_list(x: Any) -> List[str]:
 # Dataset helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_context(docs: Optional[Sequence[Any]], k: int = 10, clip_chars: int = 250) -> str:
+def build_context(docs: Optional[Sequence[Any]], k: int = 10, clip_chars: int = 350) -> str:
     parts: List[str] = []
     for d in (docs or [])[:k]:
         txt = d.get("text", "") if isinstance(d, dict) else str(d)
@@ -145,7 +145,46 @@ def tier_from_spop(s_pop: int) -> str:
         return "INFREQUENT"
     return "FREQUENT"
 
+# -------------------------
+# Helpers (SRE-aware context)
+# -------------------------
+SRE_RETR_COL   = "retrieved_docs_sre"
+BASE_RETR_COL  = "retrieved_docs"
 
+def build_context_from_sre_list(sre_list, score_th: float, k: int, clip_chars: int) -> str:
+    if not isinstance(sre_list, list):
+        return ""
+    passed = []
+    for d in sre_list:
+        if not isinstance(d, dict):
+            continue
+        score = float(d.get("score", -1))
+        txt   = (d.get("text") or "").strip()
+        if txt and score >= score_th:
+            passed.append(txt[:clip_chars])
+        if len(passed) >= k:
+            break
+    return "\n\n".join(passed)
+
+def get_context_for_run(ex: dict, run_type: str, use_context: bool, sre_score_th: float, top_k: int, clip_chars: int) -> str:
+    if not use_context:
+        return ""
+
+    rt = (run_type or "").upper()
+
+    # SRE run: try retrieved_docs_sre with threshold, else fall back
+    if "SRE" in rt:
+        sre_list = ex.get(SRE_RETR_COL) or []
+        ctx = build_context_from_sre_list(sre_list, score_th=sre_score_th, k=top_k, clip_chars=clip_chars)
+        if ctx.strip():
+            return ctx
+
+        base_docs = ex.get(BASE_RETR_COL) or []
+        return build_context(base_docs, k=top_k, clip_chars=clip_chars)
+
+    # non-SRE run: old behavior
+    base_docs = ex.get(BASE_RETR_COL) or []
+    return build_context(base_docs, k=top_k, clip_chars=clip_chars)
 # ─────────────────────────────────────────────────────────────────────────────
 # Prediction post-processing
 # ─────────────────────────────────────────────────────────────────────────────
