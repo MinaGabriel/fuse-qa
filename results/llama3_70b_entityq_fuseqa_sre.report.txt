@@ -1,0 +1,14 @@
+================================================================================
+PopQA Exact Match Report — Tiers
+================================================================================
+Model:    llama-3.3-70b-instruct
+Mode:     FUSEQA-SRE
+Run Time: 20260308-0418
+
+Duration: 45310.17 seconds (755.17 minutes)
+
+Exact Match (EM):
+  ALL          n=22075  EM=0.4001
+  LONG-TAIL    n=8794   EM=0.3673
+  INFREQUENT   n=11355  EM=0.4281
+  FREQUENT     n=1926   EM=0.3847

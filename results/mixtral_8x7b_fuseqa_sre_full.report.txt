@@ -1,0 +1,14 @@
+================================================================================
+PopQA Exact Match Report — Tiers
+================================================================================
+Model:    mixtral-8x7b-instruct-v0.1-2
+Mode:     FUSEQA-SRE
+Run Time: 20260305-1758
+
+Duration: 23632.25 seconds (393.87 minutes)
+
+Exact Match (EM):
+  ALL          n=14267  EM=0.3844
+  LONG-TAIL    n=1399   EM=0.3410
+  INFREQUENT   n=10050  EM=0.3576
+  FREQUENT     n=2818   EM=0.5014

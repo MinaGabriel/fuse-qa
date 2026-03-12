@@ -1,0 +1,14 @@
+================================================================================
+PopQA Exact Match Report — Tiers
+================================================================================
+Model:    gpt-oss-120b
+Mode:     FUSEQA
+Run Time: 20260220-0046
+
+Duration: 19117.29 seconds (318.62 minutes)
+
+Exact Match (EM):
+  ALL          n=14267  EM=0.3802
+  LONG-TAIL    n=1399   EM=0.3410
+  INFREQUENT   n=10050  EM=0.3629
+  FREQUENT     n=2818   EM=0.4613
