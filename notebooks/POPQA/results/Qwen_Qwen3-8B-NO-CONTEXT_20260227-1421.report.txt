@@ -1,0 +1,14 @@
+================================================================================
+PopQA Exact Match Report — Tiers
+================================================================================
+Model:    Qwen/Qwen3-8B
+Mode:     NO-CONTEXT
+Run Time: 20260227-1504
+
+Duration: 2548.99 seconds (42.48 minutes)
+
+Exact Match (EM):
+  ALL          n=14267  EM=0.1348
+  LONG-TAIL    n=1399   EM=0.1615
+  INFREQUENT   n=10050  EM=0.0739
+  FREQUENT     n=2818   EM=0.3385

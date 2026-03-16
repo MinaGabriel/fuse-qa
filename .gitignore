@@ -6,8 +6,8 @@
 popqa_with_retrieval/
 # Local test notebooks
 test.ipynb
-/notebooks/POPQA/results
-/notebooks/ENTITYQUESTIONS/results
+/notebooks/POPQA/results/*.jsonl
+/notebooks/ENTITYQUESTIONS/results/*.jsonl
 notebooks/ENTITYQUESTIONS/generate-data.ipynb
 ################################
 # Python

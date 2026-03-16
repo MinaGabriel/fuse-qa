@@ -46,15 +46,21 @@ def hf_model_to_filename(model_id: str, max_len: int = 120) -> str:
 
 def generate_report(counts: Dict[str, int], em_hits: Dict[str, int], file_name: str, model_name: str, 
                     run_type: str, total_time: float, 
-                    groups: Sequence[str] = ("ALL", "LONG-TAIL", "INFREQUENT", "FREQUENT")) -> str:
+                    groups: Sequence[str] = ("ALL", "LONG-TAIL", "INFREQUENT", "FREQUENT"), dataset: str = "PopQA",
+                    TOP_K: int = 5,
+                    SRE_SCORE_TH: float = 0.90,
+                    CLIP_CHARS: int = 1024) -> str:
     _ensure_dir("results")
 
     lines: List[str] = []
     lines.append("=" * 80)
-    lines.append("PopQA Exact Match Report — Tiers")
+    lines.append(f"{dataset} Exact Match Report — Tiers")
     lines.append("=" * 80)
     lines.append(f"Model:    {model_name}")
     lines.append(f"Mode:     {run_type}")
+    lines.append(f"TOP_K:    {TOP_K}")
+    lines.append(f"SRE_TH:   {SRE_SCORE_TH}")
+    lines.append(f"CLIP_CHARS:{CLIP_CHARS}")
     lines.append(f"Run Time: {datetime.now().strftime('%Y%m%d-%H%M')}")
     lines.append("")
     lines.append(f"Duration: {total_time:.2f} seconds ({total_time/60:.2f} minutes)")

@@ -1,0 +1,52 @@
+{
+  "citation": "",
+  "description": "",
+  "features": {
+    "question": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "retrieved_docs": {
+      "feature": {
+        "score": {
+          "dtype": "float64",
+          "_type": "Value"
+        },
+        "text": {
+          "dtype": "string",
+          "_type": "Value"
+        }
+      },
+      "_type": "List"
+    },
+    "subj": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "prop": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "s_pop": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "s_pop_sum": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "s_pop_avg": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "possible_answers": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "List"
+    }
+  },
+  "homepage": "",
+  "license": ""
+}

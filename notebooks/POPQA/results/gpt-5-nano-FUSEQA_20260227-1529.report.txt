@@ -1,0 +1,14 @@
+================================================================================
+PopQA Exact Match Report — Tiers
+================================================================================
+Model:    gpt-5-nano
+Mode:     FUSEQA
+Run Time: 20260227-1958
+
+Duration: 16123.61 seconds (268.73 minutes)
+
+Exact Match (EM):
+  ALL          n=14267  EM=0.2595
+  LONG-TAIL    n=1399   EM=0.3767
+  INFREQUENT   n=10050  EM=0.2190
+  FREQUENT     n=2818   EM=0.3456

@@ -1,0 +1,14 @@
+================================================================================
+PopQA Exact Match Report — Tiers
+================================================================================
+Model:    Qwen/Qwen2.5-7B
+Mode:     FUSEQA-SRE
+Run Time: 20260227-1228
+
+Duration: 2238.72 seconds (37.31 minutes)
+
+Exact Match (EM):
+  ALL          n=14267  EM=0.4435
+  LONG-TAIL    n=1399   EM=0.4453
+  INFREQUENT   n=10050  EM=0.4083
+  FREQUENT     n=2818   EM=0.5681

@@ -1,0 +1,17 @@
+================================================================================
+EntityQuestions Exact Match Report — Tiers
+================================================================================
+Model:    meta-llama/Meta-Llama-3-8B
+Mode:     FUSEQA-SRE
+TOP_K:    3
+SRE_TH:   0.8
+CLIP_CHARS:1024
+Run Time: 20260313-1506
+
+Duration: 2437.71 seconds (40.63 minutes)
+
+Exact Match (EM):
+  ALL          n=14267  EM=0.4242
+  LONG-TAIL    n=1399   EM=0.4410
+  INFREQUENT   n=10050  EM=0.3843
+  FREQUENT     n=2818   EM=0.5582
